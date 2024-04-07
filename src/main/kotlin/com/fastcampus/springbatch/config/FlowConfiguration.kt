@@ -13,7 +13,7 @@ import org.springframework.transaction.PlatformTransactionManager
 
 private val logger = KotlinLogging.logger {}
 
-@Configuration
+//@Configuration
 class FlowConfiguration {
     @Bean
     fun flowJob(
@@ -24,8 +24,10 @@ class FlowConfiguration {
     ): Job {
         return JobBuilder("flowJob", jobRepository)
             .start(step1)
-            .next(step2)
-            .next(step3)
+            .on("*").to(step2)
+            .from(step1)
+            .on("FAILED").to(step3)
+            .end()
             .build()
     }
 
@@ -34,7 +36,8 @@ class FlowConfiguration {
         return StepBuilder("step1", jobRepository)
             .tasklet({ _, _ ->
                 logger.info { "Step1" }
-                RepeatStatus.FINISHED
+                throw IllegalStateException("강제 IllegalStateException")
+//                RepeatStatus.FINISHED
             }, platformTransactionManager)
             .allowStartIfComplete(true)
             .build()
