@@ -20,9 +20,9 @@ private val logger = KotlinLogging.logger {}
 @Configuration
 class JobConfiguration {
     @Bean
-    fun job(jobRepository: JobRepository, step: Step): Job {
-        return JobBuilder("job-chunk", jobRepository)
-            .start(step)
+    fun job(jobRepository: JobRepository, stepForSkipTest: Step): Job {
+        return JobBuilder("job-skip-test", jobRepository)
+            .start(stepForSkipTest)
             .build()
     }
 
@@ -70,6 +70,35 @@ class JobConfiguration {
             .reader(itemReader)
 //            .processor()
             .writer { }
+//            .allowStartIfComplete(true)
+            .build()
+    }
+
+    @Bean
+    fun stepForSkipTest(jobRepository: JobRepository, platformTransactionManager: PlatformTransactionManager): Step {
+        val itemReader = object : ItemReader<Int?> {
+            private var count = 0
+
+            override fun read() : Int? {
+                count++
+
+                logger.info { "read $count"}
+
+                if (count > 15) {
+                    logger.info { "강제 exception 처리 $count" }
+                    throw IllegalArgumentException("강제 exception 처리")
+                }
+
+                return count
+            }
+        }
+
+        return StepBuilder("step", jobRepository)
+            .chunk<Any, Any>(10, platformTransactionManager)
+            .reader(itemReader)
+            .writer { }
+            .faultTolerant()
+            .skipPolicy { t, skipCount -> t is IllegalArgumentException && skipCount < 5 }
             .build()
     }
 }
