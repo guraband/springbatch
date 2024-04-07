@@ -17,7 +17,8 @@ import org.springframework.transaction.PlatformTransactionManager
 
 private val logger = KotlinLogging.logger {}
 
-@Configuration
+// Job name must be specified in case of multiple jobs 방지를 위해 테스트가 완료된 것은 주석 처리
+//@Configuration
 class JobConfiguration {
     @Bean
     fun job(jobRepository: JobRepository, stepForSkipTest: Step): Job {
