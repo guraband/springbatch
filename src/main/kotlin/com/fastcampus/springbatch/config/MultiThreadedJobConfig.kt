@@ -11,23 +11,21 @@ import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
-import org.springframework.batch.item.file.FlatFileItemReader
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.io.ClassPathResource
+import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.transaction.PlatformTransactionManager
 
 private val logger = KotlinLogging.logger {}
 
-//@Configuration
-class ItemReaderJobConfiguration {
+@Configuration
+class MultiThreadedJobConfig {
     @Bean
-    fun itemReaderJob(
+    fun job(
         jobRepository: JobRepository,
         step: Step,
     ): Job {
-        return JobBuilder("itemReaderJob", jobRepository)
+        return JobBuilder("multiThreadJob", jobRepository)
             .incrementer(RunIdIncrementer())
             .start(step)
             .build()
@@ -37,37 +35,25 @@ class ItemReaderJobConfiguration {
     fun step(
         jobRepository: JobRepository,
         platformTransactionManager: PlatformTransactionManager,
-//        flatFileItemReader: ItemReader<User>,
         jpaPagingItemReader: ItemReader<User>,
     ): Step {
-        return StepBuilder("itemReaderStep", jobRepository)
-            .chunk<User, User>(1000, platformTransactionManager)
+        return StepBuilder("step", jobRepository)
+            .chunk<User, User>(50, platformTransactionManager)
             .reader(jpaPagingItemReader)
-            .writer(System.out::println)
-            .allowStartIfComplete(true)
+            .writer { result -> logger.info { result } }
+            .taskExecutor(SimpleAsyncTaskExecutor())
             .build()
-    }
-
-    @Bean
-    fun flatFileItemReader(): FlatFileItemReader<User> {
-            return FlatFileItemReaderBuilder<User>()
-                .name("flatFileItemReader")
-                .resource(ClassPathResource("users.txt"))
-                .linesToSkip(2)
-                .delimited().delimiter(",")
-                .names("name", "age", "region", "phoneNo")
-                .targetType(User::class.java)
-                .build()
     }
 
     @Bean
     fun jpaPagingItemReader(
         entityManagerFactory: EntityManagerFactory
-    ) : ItemReader<User> {
+    ): ItemReader<User> {
         return JpaPagingItemReaderBuilder<User>()
             .name("jpaPagingItemReader")
             .entityManagerFactory(entityManagerFactory)
-            .pageSize(50)
+            .pageSize(100)
+            .saveState(false)
             .queryString("select u from USER u order by u.id")
             .build()
     }
