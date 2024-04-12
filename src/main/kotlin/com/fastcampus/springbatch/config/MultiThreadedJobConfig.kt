@@ -18,7 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager
 
 private val logger = KotlinLogging.logger {}
 
-@Configuration
+//@Configuration
 class MultiThreadedJobConfig {
     @Bean
     fun job(
