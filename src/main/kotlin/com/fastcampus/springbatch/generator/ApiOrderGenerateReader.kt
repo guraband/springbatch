@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicLong
 
 @Component
-@StepScope
+@StepScope  // jobParameters를 사용하기 위해 필요
 class ApiOrderGenerateReader(
     @Value("#{jobParameters['totalCount']}") totalCount : String,
 ) : ItemReader<Boolean> {
