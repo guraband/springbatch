@@ -8,5 +8,4 @@ class SpringbatchApplication
 
 fun main(args: Array<String>) {
     runApplication<SpringbatchApplication>(*args)
-    println("Hello world")
 }
