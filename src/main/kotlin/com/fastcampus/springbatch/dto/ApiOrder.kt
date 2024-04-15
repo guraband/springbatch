@@ -1,11 +1,11 @@
 package com.fastcampus.springbatch.dto
 
 class ApiOrder(
-    val id: String,
-    val customerId: Long,
-    val url: String,
-    val status: Status,
-    val createdAt: String,
+    var id: String = "",
+    var customerId: Long? = null,
+    var url: String = "",
+    var status: Status = Status.SUCCESS,
+    var createdAt: String = "",
 )
 
 enum class Status() {
@@ -14,9 +14,9 @@ enum class Status() {
 }
 
 enum class ServicePolicy(
-    val id:Long,
-    val url:String,
-    val fee:Int,
+    val id: Long,
+    val url: String,
+    val fee: Int,
 ) {
     A(1L, "/service/a", 100),
     B(2L, "/service/b", 200),
@@ -44,4 +44,17 @@ enum class ServicePolicy(
     X(24L, "/service/x", 2400),
     Y(25L, "/service/y", 2500),
     Z(26L, "/service/z", 2600),
+    ;
+
+    companion object {
+        fun findByUrl(url: String): ServicePolicy {
+            return entries.firstOrNull { it.url == url }
+                ?: throw IllegalArgumentException()
+        }
+
+        fun findById(id: Long): ServicePolicy {
+            return entries.firstOrNull { it.id == id }
+                ?: throw IllegalArgumentException()
+        }
+    }
 }

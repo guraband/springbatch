@@ -25,15 +25,15 @@ import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@Configuration
+//@Configuration
 class ApiOrderGeneratePartitionJobConfiguration(
     private val jobRepository: JobRepository,
     private val platformTransactionManager: PlatformTransactionManager,
 ) {
     @Bean
-    fun apiOrderGenerateJob(managerStep: Step): Job {
+    fun apiOrderGenerateJob(step: Step): Job {
         return JobBuilder("apiOrderGenerateJob", jobRepository)
-            .start(managerStep)
+            .start(step)
             .incrementer(RunIdIncrementer())
             .validator(DefaultJobParametersValidator(arrayOf("targetDate", "totalCount"), emptyArray()))
             .build()
@@ -97,7 +97,7 @@ class ApiOrderGeneratePartitionJobConfiguration(
     @Bean
     @StepScope
     fun apiOrderGenerateWriter(
-        @Value("#{stepExecutionContext['targetDate']}") targetDate: String?,
+        @Value("#{jobParameters['targetDate']}") targetDate: String?,
     ): FlatFileItemWriter<ApiOrder> {
         val fileName = "api_orders_${targetDate}.csv"
 
