@@ -5,12 +5,13 @@ import org.springframework.batch.core.JobParameters
 import org.springframework.batch.core.JobParametersValidator
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
+import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.format.DateTimeFormatter
 
-@Configuration
+//@Configuration
 class SettleJobConfiguration(
     private val jobRepository: JobRepository,
 ) {
@@ -22,6 +23,7 @@ class SettleJobConfiguration(
     ): Job {
         return JobBuilder("settleJob", jobRepository)
             .validator(DateFormatJobParametersValidator(arrayOf("targetDate")))
+            .incrementer(RunIdIncrementer())
             .start(preSettleDetailStep)
             .next(settleDetailStep)
             .build()
