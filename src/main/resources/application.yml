@@ -14,3 +14,12 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
+feign:
+  logger:
+    level: full
+logging:
+  level:
+    org.hibernate.type.descriptor.sql: trace
+    feign:
+      Logger:
+        Level: DEBUG
